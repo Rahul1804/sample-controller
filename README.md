@@ -25,8 +25,8 @@ The controller watches for changes to `Foo` resources and ensures that correspon
 1. **Clone the repository:**
 
    ```bash
-   git clone <repository-url>
-   cd <repository-name>
+   git clone git@github.com:Rahul1804/sample-controller.git
+   cd sample-controller
 
 2. **Create the CRD**
 
