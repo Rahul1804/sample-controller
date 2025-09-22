@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Go module dependencies
+  - package-ecosystem: "gomod"
+    directory: "/" # Location of go.mod
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps(go)"
+
+  # Docker base image updates
+  - package-ecosystem: "docker"
+    directory: "/" # Location of Dockerfile
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps(docker)"
