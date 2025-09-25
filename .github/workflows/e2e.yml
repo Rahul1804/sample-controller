@@ -27,16 +27,16 @@ jobs:
         run: kind create cluster --name e2e-test
 
       - name: Build controller image
-        run: docker build -t sample-controller:latest .
+        run: docker build -t foo-controller:latest .
 
       - name: Load image into Kind
-        run: kind load docker-image sample-controller:latest --name e2e-test
+        run: kind load docker-image foo-controller:latest --name e2e-test
 
       - name: Apply CRD
         run: kubectl apply -f foo-crd.yaml
 
       - name: Deploy controller
-        run: kubectl apply -f deploy.yaml
+        run: kubectl apply -f test/config/deploy.yaml
 
       - name: Run e2e tests
         run: go test ./test/e2e/... -v
