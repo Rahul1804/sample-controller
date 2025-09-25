@@ -41,6 +41,9 @@ jobs:
       - name: Apply CRD
         run: kubectl apply -f foo-crd.yaml
 
+      - name: Apply RBAC
+        run: kubectl apply -f test/config/rbac.yaml
+
       - name: Deploy controller
         run: kubectl apply -f test/config/deploy.yaml
 
