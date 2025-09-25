@@ -13,6 +13,7 @@ spec:
       labels:
         app: foo-controller
     spec:
+      serviceAccountName: foo-controller-sa
       containers:
         - name: controller
           image: foo-controller:latest
