@@ -16,6 +16,4 @@ spec:
       containers:
         - name: controller
           image: foo-controller:latest
-          command:
-            - /controller
           imagePullPolicy: IfNotPresent
