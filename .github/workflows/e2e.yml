@@ -38,6 +38,9 @@ jobs:
       - name: Deploy controller
         run: kubectl apply -f test/config/deploy.yaml
 
+      - name: Ensure go modules
+        run: go mod tidy
+
       - name: Run e2e tests
         run: go test ./test/e2e/... -v
 
