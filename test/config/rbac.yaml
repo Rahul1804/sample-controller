@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: foo-controller
+rules:
+  # Allow controller to manage Foo CRs
+  - apiGroups: ["example.com"]
+    resources: ["foos"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow controller to manage Deployments
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Optionally manage pods if needed
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: foo-controller-sa
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: foo-controller-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: foo-controller
+subjects:
+  - kind: ServiceAccount
+    name: foo-controller-sa
+    namespace: default
