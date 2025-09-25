@@ -24,8 +24,10 @@ jobs:
           sudo mv ./kind /usr/local/bin/kind
 
       - name: Create Kind cluster
+        run: kind create cluster --name e2e-test
+
+      - name: Set KUBECONFIG
         run: |
-          kind create cluster --name e2e-test
           mkdir -p $HOME/.kube
           kind get kubeconfig --name=e2e-test > $HOME/.kube/kind-config
           echo "KUBECONFIG=$HOME/.kube/kind-config" >> $GITHUB_ENV
