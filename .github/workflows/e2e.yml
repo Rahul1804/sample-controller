@@ -1,0 +1,46 @@
+name: e2e-tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+
+      - name: Install Kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Create Kind cluster
+        run: kind create cluster --name e2e-test
+
+      - name: Build controller image
+        run: docker build -t sample-controller:latest .
+
+      - name: Load image into Kind
+        run: kind load docker-image sample-controller:latest --name e2e-test
+
+      - name: Apply CRD
+        run: kubectl apply -f foo-crd.yaml
+
+      - name: Deploy controller
+        run: kubectl apply -f deploy.yaml
+
+      - name: Run e2e tests
+        run: go test ./test/e2e/... -v
+
+      - name: Delete Kind cluster
+        if: always()
+        run: kind delete cluster --name e2e-test
