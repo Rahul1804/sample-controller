@@ -18,35 +18,44 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
+var kubeClient *kubernetes.Clientset
+var dynClient dynamic.Interface
+var ctx context.Context
+var fooGVR schema.GroupVersionResource
+
 func TestE2E(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Foo Controller E2E Suite")
 }
 
-var _ = Describe("Foo Controller", func() {
-	var kubeClient *kubernetes.Clientset
-	var dynClient dynamic.Interface
-	ctx := context.Background()
-	fooGVR := schema.GroupVersionResource{
+// -------------------
+// Top-level setup
+// -------------------
+var _ = BeforeSuite(func() {
+	ctx = context.Background()
+	fooGVR = schema.GroupVersionResource{
 		Group:    "example.com",
 		Version:  "v1",
 		Resource: "foos",
 	}
 
-	BeforeSuite(func() {
-		cfg, err := rest.InClusterConfig()
-		if err != nil {
-			cfg, err = clientcmd.BuildConfigFromFlags("", clientcmd.RecommendedHomeFile)
-		}
-		Expect(err).NotTo(HaveOccurred())
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		cfg, err = clientcmd.BuildConfigFromFlags("", clientcmd.RecommendedHomeFile)
+	}
+	Expect(err).NotTo(HaveOccurred())
 
-		kubeClient, err = kubernetes.NewForConfig(cfg)
-		Expect(err).NotTo(HaveOccurred())
+	kubeClient, err = kubernetes.NewForConfig(cfg)
+	Expect(err).NotTo(HaveOccurred())
 
-		dynClient, err = dynamic.NewForConfig(cfg)
-		Expect(err).NotTo(HaveOccurred())
-	})
+	dynClient, err = dynamic.NewForConfig(cfg)
+	Expect(err).NotTo(HaveOccurred())
+})
 
+// -------------------
+// Tests
+// -------------------
+var _ = Describe("Foo Controller", func() {
 	It("should create a Deployment when Foo is created", func() {
 		foo := &unstructuredv1.Unstructured{
 			Object: map[string]interface{}{
@@ -69,12 +78,5 @@ var _ = Describe("Foo Controller", func() {
 			dep, err := kubeClient.AppsV1().Deployments("default").Get(ctx, "test-foo", metav1.GetOptions{})
 			return err == nil && dep.Status.Replicas == 1
 		}, 15*time.Second, 500*time.Millisecond).Should(BeTrue())
-	})
-
-	AfterSuite(func() {
-		err := dynClient.Resource(fooGVR).Namespace("default").Delete(ctx, "test-foo", metav1.DeleteOptions{})
-		Expect(err).NotTo(HaveOccurred())
-		err = kubeClient.AppsV1().Deployments("default").Delete(ctx, "test-foo", metav1.DeleteOptions{})
-		Expect(err).NotTo(HaveOccurred())
 	})
 })
