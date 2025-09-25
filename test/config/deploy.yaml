@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-controller
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: foo-controller
+  template:
+    metadata:
+      labels:
+        app: foo-controller
+    spec:
+      containers:
+        - name: controller
+          image: foo-controller:latest
+          command:
+            - /controller
+          imagePullPolicy: IfNotPresent
