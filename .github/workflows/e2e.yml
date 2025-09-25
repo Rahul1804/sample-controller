@@ -44,6 +44,18 @@ jobs:
       - name: Deploy controller
         run: kubectl apply -f test/config/deploy.yaml
 
+      - name: Wait for controller rollout
+        run: kubectl rollout status deploy/foo-controller --timeout=60s
+
+      - name: Check pods
+        run: |
+          echo "Listing pods in default namespace..."
+          kubectl get pods -n default -o wide
+          echo "Describing controller pod..."
+          kubectl describe pod -l app=foo-controller -n default || true
+          echo "Controller logs (if available)..."
+          kubectl logs deploy/foo-controller -n default || true
+
       - name: Ensure go modules
         run: go mod tidy
 
