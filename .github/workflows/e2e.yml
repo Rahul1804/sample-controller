@@ -26,6 +26,9 @@ jobs:
       - name: Create Kind cluster
         run: kind create cluster --name e2e-test
 
+      - name: Export KUBECONFIG
+        run: echo "KUBECONFIG=$(kind get kubeconfig-path --name=e2e-test)" >> $GITHUB_ENV
+
       - name: Build controller image
         run: docker build -t foo-controller:latest .
 
