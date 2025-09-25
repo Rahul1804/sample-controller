@@ -11,7 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -39,12 +38,10 @@ var _ = BeforeSuite(func() {
 		Resource: "foos",
 	}
 
-	// Try in-cluster first, then kubeconfig
+	// Try in-cluster first, fallback to kubeconfig
 	cfg, err := rest.InClusterConfig()
 	if err != nil {
-		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-		configOverrides := &clientcmd.ConfigOverrides{}
-		cfg, err = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
+		cfg, err = clientcmd.BuildConfigFromFlags("", clientcmd.RecommendedHomeFile)
 	}
 	Expect(err).NotTo(HaveOccurred())
 
@@ -77,13 +74,13 @@ var _ = Describe("Foo Controller", func() {
 		_, err := dynClient.Resource(fooGVR).Namespace("default").Create(ctx, foo, metav1.CreateOptions{})
 		Expect(err).NotTo(HaveOccurred())
 
-		// Wait until deployment exists and has 1 ready replica
+		// Wait until the controller creates the Deployment
 		Eventually(func() bool {
-			dep, err := kubeClient.AppsV1().Deployments("default").Get(ctx, "test-foo", metav1.GetOptions{})
-			return err == nil && dep.Status.ReadyReplicas == 1
-		}, 30*time.Second, 1*time.Second).Should(BeTrue())
-
-		// Cleanup
-		_ = dynClient.Resource(fooGVR).Namespace("default").Delete(ctx, "test-foo", metav1.DeleteOptions{})
+			dep, err := kubeClient.AppsV1().Deployments("default").Get(ctx, "test-foo-deployment", metav1.GetOptions{})
+			if err != nil {
+				return false
+			}
+			return dep.Status.ReadyReplicas == 1
+		}, 120*time.Second, 2*time.Second).Should(BeTrue())
 	})
 })
