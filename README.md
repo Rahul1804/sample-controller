@@ -43,4 +43,4 @@ The controller watches for changes to `Foo` resources and ensures that correspon
     ```bash
     kubectl apply -f foo.yaml
 
-5. It's simple test controller, so it's not following any directory structure.
+5. It's simple test controller, so it's not following any directory structure. No an example for production controller.
