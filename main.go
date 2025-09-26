@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
@@ -76,7 +76,7 @@ func NewController(
 }
 
 func (c *Controller) Run(stopCh <-chan struct{}) {
-	defer runtime.HandleCrash()
+	defer utilruntime.HandleCrash()
 	defer c.workqueue.ShutDown()
 
 	klog.Info("Starting Foo controller")
@@ -84,7 +84,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.fooInformer.Run(stopCh)
 
 	if !cache.WaitForCacheSync(stopCh, c.fooInformer.HasSynced) {
-		runtime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+		utilruntime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
 		return
 	}
 
@@ -118,7 +118,7 @@ func (c *Controller) processNextItem() bool {
 	} else {
 		klog.Errorf("Dropping %s out of the queue: %v", key, err)
 		c.workqueue.Forget(key)
-		runtime.HandleError(err)
+		utilruntime.HandleError(err)
 	}
 
 	return true
